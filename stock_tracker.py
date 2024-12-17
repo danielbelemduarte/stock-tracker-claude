@@ -3,6 +3,37 @@ import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 
+def fetch_stock_price(ticker):
+    """
+    Fetch the current price of a stock given its ticker symbol.
+    
+    Args:
+        ticker (str): Stock ticker symbol
+    
+    Returns:
+        dict: A dictionary containing stock price information
+    """
+    try:
+        # Fetch stock information
+        stock = yf.Ticker(ticker)
+        
+        # Get current stock price
+        current_price = stock.info.get('regularMarketPrice')
+        
+        # Get additional relevant information
+        return {
+            'ticker': ticker,
+            'current_price': round(current_price, 2) if current_price else None,
+            'company_name': stock.info.get('longName', 'N/A'),
+            'previous_close': round(stock.info.get('previousClose', 0), 2),
+            'market_cap': stock.info.get('marketCap', 'N/A')
+        }
+    
+    except Exception as e:
+        return {
+            'error': f'Error fetching stock price for {ticker}: {str(e)}'
+        }
+
 def get_stock_moving_average(ticker, days=365):
     """
     Calculate the moving average of a stock over the last year.
@@ -53,12 +84,19 @@ def main():
     # Example usage
     tickers = ['AAPL', 'GOOGL', 'MSFT']
     
+    print("Stock Price Fetching:")
+    for ticker in tickers:
+        price_info = fetch_stock_price(ticker)
+        print(f"\nStock Price for {ticker}:")
+        for key, value in price_info.items():
+            print(f"{key.replace('_', ' ').title()}: {value}")
+    
+    print("\n\nMoving Average Analysis:")
     for ticker in tickers:
         result = get_stock_moving_average(ticker)
-        print(f"Stock Analysis for {ticker}:")
+        print(f"\nStock Analysis for {ticker}:")
         for key, value in result.items():
             print(f"{key.replace('_', ' ').title()}: {value}")
-        print('\n')
 
 if __name__ == '__main__':
     main()
